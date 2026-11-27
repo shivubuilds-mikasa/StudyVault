@@ -3,6 +3,8 @@ import sqlite3, json, re, datetime, os, hashlib
 BASE=Path(__file__).resolve().parents[1]
 DB=BASE/'library.db'
 SUBJECT_NAMES={'SEPM':'SEPM','IDS':'IDS','ATC':'ATC','OS':'OS','GPU':'GPU','ML':'ML','Elective_Options_Review':'Elective Options'}
+LIBRARY_ROOTS=('01_Subjects','02_Examination','03_Unclassified')
+LIBRARY_EXTENSIONS={'.pdf','.pptx','.ppt','.docx','.doc','.xlsx','.xls'}
 EXAMS=[
  {'date':'2026-12-07','name':'GPU','code':'24CS3501','time':None,'verified':True},
  {'date':'2026-12-09','name':'SEPM','code':'24CS3502','time':None,'verified':True},
@@ -39,16 +41,20 @@ def page_count(p):
 def scan():
  initialize();now=datetime.datetime.now().isoformat(timespec='seconds'); seen=[]
  with conn() as c:
-  for p in BASE.rglob('*'):
-   if not p.is_file() or p.name in ('library.db','render.yaml','Dockerfile'): continue
-   rel=p.relative_to(BASE).as_posix()
-   if rel.startswith(('05_Web_Application/','04_Original_Backups/','assets/','.git/','__pycache__/')): continue
-   if p.name.startswith('.') or rel.endswith(('.json','.md','.py','.bat')): continue
-   subject,cat=classify(rel); ext=p.suffix.lower()
-   st=p.stat(); seen.append(rel); digest=hashlib.sha256(p.read_bytes()).hexdigest()
-   prior=next((row for row in c.execute('SELECT path FROM documents WHERE sha256=? AND path<>?',(digest,rel)) if not (BASE/row['path']).exists()),None)
-   if prior: c.execute('DELETE FROM documents WHERE path=?',(prior['path'],))
-   c.execute('''INSERT INTO documents(path,subject,category,name,ext,size,modified,pages,missing,seen,sha256) VALUES(?,?,?,?,?,?,?,?,0,?,?) ON CONFLICT(path) DO UPDATE SET subject=excluded.subject,category=excluded.category,name=excluded.name,ext=excluded.ext,size=excluded.size,modified=excluded.modified,pages=COALESCE(excluded.pages,documents.pages),missing=0,seen=excluded.seen,sha256=excluded.sha256''',(rel,subject,cat,p.name,ext,st.st_size,datetime.datetime.fromtimestamp(st.st_mtime).isoformat(timespec='seconds'),page_count(p),now,digest))
+  # Fail closed: only scan the three study-library directories. BASE also contains
+  # deployment artifacts (including Render's .venv), which must never appear as files.
+  c.execute("DELETE FROM documents WHERE path NOT LIKE '01_Subjects/%' AND path NOT LIKE '02_Examination/%' AND path NOT LIKE '03_Unclassified/%'")
+  for root_name in LIBRARY_ROOTS:
+   root=BASE/root_name
+   if not root.is_dir(): continue
+   for p in root.rglob('*'):
+    if not p.is_file() or p.suffix.lower() not in LIBRARY_EXTENSIONS or any(part.startswith('.') for part in p.relative_to(BASE).parts): continue
+    rel=p.relative_to(BASE).as_posix()
+    subject,cat=classify(rel); ext=p.suffix.lower()
+    st=p.stat(); seen.append(rel); digest=hashlib.sha256(p.read_bytes()).hexdigest()
+    prior=next((row for row in c.execute('SELECT path FROM documents WHERE sha256=? AND path<>?',(digest,rel)) if not (BASE/row['path']).exists()),None)
+    if prior: c.execute('DELETE FROM documents WHERE path=?',(prior['path'],))
+    c.execute('''INSERT INTO documents(path,subject,category,name,ext,size,modified,pages,missing,seen,sha256) VALUES(?,?,?,?,?,?,?,?,0,?,?) ON CONFLICT(path) DO UPDATE SET subject=excluded.subject,category=excluded.category,name=excluded.name,ext=excluded.ext,size=excluded.size,modified=excluded.modified,pages=COALESCE(excluded.pages,documents.pages),missing=0,seen=excluded.seen,sha256=excluded.sha256''',(rel,subject,cat,p.name,ext,st.st_size,datetime.datetime.fromtimestamp(st.st_mtime).isoformat(timespec='seconds'),page_count(p),now,digest))
   if seen:
    c.executemany('UPDATE documents SET missing=1 WHERE path=?',[(r,) for r in []])
    marks=','.join('?' for _ in seen)
@@ -111,7 +117,7 @@ def status():
 def files(rel:str,download:bool=False):
  p=(BASE/rel).resolve()
  parts=Path(rel).parts
- if not p.is_relative_to(BASE.resolve()) or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower() in ('.db','.sqlite','.sqlite3'): raise HTTPException(404)
+ if not p.is_relative_to(BASE.resolve()) or not parts or parts[0] not in LIBRARY_ROOTS or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower() not in LIBRARY_EXTENSIONS: raise HTTPException(404)
  import mimetypes
  return FileResponse(p,filename=p.name,media_type=mimetypes.guess_type(p.name)[0],content_disposition_type='attachment' if download else 'inline')
 @app.get('/preview/{rel:path}',response_class=HTMLResponse)
@@ -119,7 +125,7 @@ def preview_presentation(rel:str):
  import zipfile,xml.etree.ElementTree as ET,html
  p=(BASE/rel).resolve()
  parts=Path(rel).parts
- if not p.is_relative_to(BASE.resolve()) or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower()!='.pptx': raise HTTPException(404)
+ if not p.is_relative_to(BASE.resolve()) or not parts or parts[0] not in LIBRARY_ROOTS or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower()!='.pptx': raise HTTPException(404)
  ns={'a':'http://schemas.openxmlformats.org/drawingml/2006/main'}
  try:
   with zipfile.ZipFile(p) as archive:
