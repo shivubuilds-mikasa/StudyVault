@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: studyvault-cse
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    rootDir: 05_Web_Application
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/subjects
+    autoDeployTrigger: commit

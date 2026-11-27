@@ -43,6 +43,12 @@ At phone widths the navigation becomes a thumb-friendly bottom dock, stats use a
 
 The UI uses local CSS and a small amount of delegated JavaScript. It respects `prefers-reduced-motion`, avoids animation libraries, and keeps scroll work frame-limited.
 
+## Deploy a public demo
+
+[![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shivubuilds-mikasa/StudyVault)
+
+The included `render.yaml` creates a free Singapore web service from this repository. It runs the FastAPI app with the empty library that is in the public repo. It does not contain your study files or local database. Free Render services spin down after 15 minutes without traffic, so the first visit after a quiet period may take a little longer.
+
 ## Your files stay yours
 
 The public repository contains application source and the animated README artwork only. It intentionally excludes course documents, backups, the SQLite index, file inventories, and verification records. The app has no login, so run it locally with your own library. A public deployment must remain an empty demo unless you separately choose a protected hosting setup for your files.
