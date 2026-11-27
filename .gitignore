@@ -1,0 +1,23 @@
+# Personal course documents and generated local data
+/01_Subjects/
+/02_Examination/
+/03_Unclassified/
+/04_Original_Backups/
+/library.db
+/file_inventory.json
+/verification_report.json
+*.pdf
+*.pptx
+*.docx
+*.xlsx
+*.jpeg
+*.jpg
+*.png
+*.db
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
