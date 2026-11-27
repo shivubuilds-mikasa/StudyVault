@@ -42,7 +42,7 @@ def scan():
   for p in BASE.rglob('*'):
    if not p.is_file() or p.name in ('library.db','render.yaml','Dockerfile'): continue
    rel=p.relative_to(BASE).as_posix()
-   if rel.startswith(('05_Web_Application/','04_Original_Backups/','assets/')): continue
+   if rel.startswith(('05_Web_Application/','04_Original_Backups/','assets/','.git/','__pycache__/')): continue
    if p.name.startswith('.') or rel.endswith(('.json','.md','.py','.bat')): continue
    subject,cat=classify(rel); ext=p.suffix.lower()
    st=p.stat(); seen.append(rel); digest=hashlib.sha256(p.read_bytes()).hexdigest()
@@ -110,14 +110,16 @@ def status():
 @app.get('/files/{rel:path}')
 def files(rel:str,download:bool=False):
  p=(BASE/rel).resolve()
- if not p.is_relative_to(BASE.resolve()) or not p.is_file(): raise HTTPException(404)
+ parts=Path(rel).parts
+ if not p.is_relative_to(BASE.resolve()) or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower() in ('.db','.sqlite','.sqlite3'): raise HTTPException(404)
  import mimetypes
  return FileResponse(p,filename=p.name,media_type=mimetypes.guess_type(p.name)[0],content_disposition_type='attachment' if download else 'inline')
 @app.get('/preview/{rel:path}',response_class=HTMLResponse)
 def preview_presentation(rel:str):
  import zipfile,xml.etree.ElementTree as ET,html
  p=(BASE/rel).resolve()
- if not p.is_relative_to(BASE.resolve()) or not p.is_file() or p.suffix.lower()!='.pptx': raise HTTPException(404)
+ parts=Path(rel).parts
+ if not p.is_relative_to(BASE.resolve()) or not p.is_file() or any(part.startswith('.') for part in parts) or p.suffix.lower()!='.pptx': raise HTTPException(404)
  ns={'a':'http://schemas.openxmlformats.org/drawingml/2006/main'}
  try:
   with zipfile.ZipFile(p) as archive:
