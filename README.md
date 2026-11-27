@@ -14,7 +14,7 @@
 
 </div>
 
-StudyVault organizes modules, past papers, mid-semester materials, and exam dates in one lightweight interface. The local version keeps your files on your own computer.
+StudyVault organizes modules, past papers, mid-semester materials, and exam dates in one lightweight interface. The live demo includes the CSE study files bundled with this repository.
 
 ## What’s inside
 
@@ -51,11 +51,11 @@ The UI uses local CSS and a small amount of delegated JavaScript. It respects `p
 
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shivubuilds-mikasa/StudyVault)
 
-The included `render.yaml` creates a free Singapore web service from this repository. It runs the FastAPI app with the empty library that is in the public repo. It does not contain your study files or local database. Free Render services spin down after 15 minutes without traffic, so the first visit after a quiet period may take a little longer.
+The included `render.yaml` creates a free Singapore web service from this repository. It serves the included CSE study library. Free Render services spin down after 15 minutes without traffic, so the first visit after a quiet period may take a little longer.
 
-## Your files stay yours
+## Included study library
 
-The public repository contains application source and the animated README artwork only. It intentionally excludes course documents, backups, the SQLite index, file inventories, and verification records. The app has no login, so run it locally with your own library. A public deployment must remain an empty demo unless you separately choose a protected hosting setup for your files.
+This public repository includes the CSE PDFs and presentation files in `01_Subjects/`, `02_Examination/`, and `03_Unclassified/`; anyone can view and download them from GitHub or the live app. The app has no login. Keep private or sensitive materials out of those folders before pushing changes. Local database files, backups, inventories, and verification records remain excluded from Git.
 
 ## Stack
 
