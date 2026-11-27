@@ -6,6 +6,8 @@
 
 **A focused, animated home for a CSE semester library.**
 
+[🌐 Open the live StudyVault demo](https://studyvault-cse-ih69.onrender.com)
+
 [![Python](https://img.shields.io/badge/Python-3.10%2B-9b761c?style=flat-square)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-9b761c?style=flat-square)](https://fastapi.tiangolo.com/)
 [![Responsive](https://img.shields.io/badge/Layout-phone%20%7C%20tablet%20%7C%20desktop-c9a33b?style=flat-square)](#responsive-by-design)
@@ -44,6 +46,8 @@ At phone widths the navigation becomes a thumb-friendly bottom dock, stats use a
 The UI uses local CSS and a small amount of delegated JavaScript. It respects `prefers-reduced-motion`, avoids animation libraries, and keeps scroll work frame-limited.
 
 ## Deploy a public demo
+
+**Live app:** [studyvault-cse-ih69.onrender.com](https://studyvault-cse-ih69.onrender.com)
 
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shivubuilds-mikasa/StudyVault)
 
